@@ -1,82 +1,141 @@
 import time
-import pandas as pd
 import re
-
-# df = Alteryx.read("#1")
-df = pd.DataFrame()
-
-
-def split_on_slash(text):
-    name = re.sub(r"\b(c\s*\/\s*o|contractor\s*\/\s*operator)\b", "", text, flags=re.IGNORECASE)
-    parts = [part.strip() for part in name.split("/")]
-    parts = [part for part in parts if part]
-    return parts
+import multiprocessing as mp
+from typing import List, Union, Optional
+import pandas as pd
+from kfold_tfidf_generator import KFoldTFIDFGenerator
 
 
-def separate_company_names(record):
-    text = record["CompanyName"]
-    companies = [text]
+class KFoldTFIDFGeneratorDriver:
+    """
+    Pipeline to preprocess company names and generate K-Fold TF-IDF features.
 
-    # if record["Source"] == "ISN Database" and (record["HasOwnerRole"] == 1 or record["HasOwnerRole"] == True):
-    if record["source"] == "source1":
-        companies = []
+    Attributes:
+        input_source (Union[str, pd.DataFrame]): Path to the Excel file or preloaded DataFrame.
+        df (pd.DataFrame): DataFrame after initial load.
+        n_process (Optional[int]): Number of processes to use for TF-IDF generation; if None, calculated dynamically.
+    """
 
-        if type(text) == str:
-            text = text.strip() if type(text) == str else text
+    def __init__(self,
+                 input_source: Union[str, pd.DataFrame],
+                 n_process: Optional[int] = None) -> None:
+        """
+        Initialize the pipeline with a data source and optional number of processes.
 
-            if ")" in text and text[-1] == ")":
-                open_bracket_idx = text.index("(")
-                bracket_text = text[open_bracket_idx + 1: -1]
-                non_bracket_text = text[0: open_bracket_idx].strip()
-                companies.append(non_bracket_text)
-                # print(non_bracket_text)
-                # print(bracket_text)
-                if "/" in bracket_text:
-                    companies.extend(split_on_slash(bracket_text))
-                else:
-                    if "APAC" not in bracket_text and "EMEA" not in bracket_text and \
-                            not re.match(r"^\d{3}-\d{6}$", bracket_text):
-                        companies.extend([bracket_text])
+        Args:
+            input_source: File path to Excel or a pandas DataFrame.
+            n_process: Number of parallel processes for TF-IDF generation. If None, it will be calculated.
+        """
+        self.input_source = input_source
+        self.n_process = n_process
+        self.df: pd.DataFrame = pd.DataFrame()
+
+    def load_data(self) -> pd.DataFrame:
+        """
+        Load the data from an Excel file or use the provided DataFrame.
+        """
+        if isinstance(self.input_source, str):
+            self.df = pd.read_excel(self.input_source)
+        elif isinstance(self.input_source, pd.DataFrame):
+            self.df = self.input_source.copy()
+        else:
+            raise ValueError("Unsupported input source type.")
+        return self.df
+
+    @staticmethod
+    def _split_on_slash(text: str) -> List[str]:
+        """
+        Split a company name on slashes, removing 'c/o' or 'contractor/operator'.
+
+        Args:
+            text: The input string to split.
+
+        Returns:
+            A list of cleaned name parts.
+        """
+        name = re.sub(r"\b(c\s*/\s*o|contractor\s*/\s*operator)\b", "", text, flags=re.IGNORECASE)
+        parts = [part.strip() for part in name.split("/")]
+        return [part for part in parts if part]
+
+    def _separate_company_names(self, record: pd.Series) -> List[str]:
+        """
+        Extract and separate company names based on custom rules.
+
+        Args:
+            record: A pandas Series representing a row in the DataFrame.
+
+        Returns:
+            List of extracted company names.
+        """
+        text = record["CompanyName"]
+        companies = [text]
+
+        if record.get("Source") == "source1":
+            companies = []
+            if isinstance(text, str):
+                text = text.strip()
+                if text.endswith(")") and "(" in text:
+                    open_idx = text.index("(")
+                    base = text[:open_idx].strip()
+                    bracket = text[open_idx + 1:-1]
+                    companies.append(base)
+                    if "/" in bracket:
+                        companies.extend(self._split_on_slash(bracket))
+                    elif not any(x in bracket for x in ["APAC", "EMEA"]) and not re.match(r"^\d{3}-\d{6}$", bracket):
+                        companies.append(bracket)
                     else:
-                        # print("YAY")
-                        # print(text)
-                        companies.remove(non_bracket_text)
-                        companies.append(text)
+                        companies = [text]
+                elif "/" in text:
+                    companies.extend(self._split_on_slash(text))
+                else:
+                    companies.append(text)
+                companies = [c.strip() for c in companies if isinstance(c, str) and c]
 
-            elif "/" in text:
-                companies.extend(split_on_slash(text))
+        return companies
 
-            else:
-                companies.append(text)
+    def process_data(self) -> pd.DataFrame:
+        """
+        Apply company name separation and explode the DataFrame.
 
-            # print(companies)
-            companies = [company.strip() for company in companies if type(company) == str and company != ""]
-            # print(companies)
-    return companies
+        Returns:
+            The processed DataFrame.
+        """
+        self.df["CompanyNameOriginal"] = self.df["CompanyName"]
+        self.df["CompanyName"] = self.df.apply(self._separate_company_names, axis=1)
+        self.df["isSeparated"] = self.df["CompanyName"].apply(lambda lst: len(lst) > 1)
+        self.df = self.df.explode("CompanyName").reset_index(drop=True)
+        return self.df
+
+    def run(self) -> pd.DataFrame:
+        """
+        Execute the full preprocessing and K-Fold TF-IDF generation.
+
+        Returns:
+            DataFrame containing the normalized TF-IDF results.
+        """
+        start_time = time.time()
+        mp.freeze_support()
+
+        # Load and preprocess data
+        self.load_data()
+        processed_df = self.process_data()
+
+        # Determine number of processes if not provided
+        num_process = self.n_process if self.n_process is not None else (
+            (len(processed_df[processed_df["Source"] == "Salesforce"]) // 10000) + 1
+        )
+
+        # Generate K-Fold TF-IDF
+        kfold_generator = KFoldTFIDFGenerator(processed_df)
+        result = kfold_generator.run_multiprocess(num_process)
+        result = result[result["normalized_tfidf"] != {}]
+
+        print(f"Pipeline completed in {time.time() - start_time:.2f} seconds using {num_process} processes.")
+        return result
 
 
-df["CompanyNameOriginal"] = df["CompanyName"]
-df["CompanyName"] = df.apply(lambda x: separate_company_names(x), axis=1)
-df["isSeparated"] = df["CompanyName"].apply(lambda x: len(x) > 1)
+if __name__ == "__main__":
+    pipeline = KFoldTFIDFGeneratorDriver("data/pretfidf_prodtest.xlsx")
+    output_df = pipeline.run()
+    print(output_df)
 
-df = df.explode("CompanyName")
-
-input_dir = "C:/Users/sdosi/ISN Summer 2024 Internship/Projects/Prospective Client Analysis/data/test_output/prodtest"
-output_dir = "C:/Users/sdosi/ISN Summer 2024 Internship/Projects/Prospective Client Analysis/data/test_output/prodtest"
-
-request_time = time.time()
-input_path = input_dir + "/pretfidf_prodtest_" + str(int(request_time)) + ".json"
-output_path = output_dir + "/posttfidf_prodtest_" + str(int(request_time)) + ".json"
-
-df.to_json(input_path, orient="records")
-
-python_env_path = "C:\\Users\\sdosi\\.virtualenvs\\Python_Outsourcing-PMVepcMz\\Scripts\\python.exe"
-script_path = "C:\\Users\\sdosi\\ISN Summer 2024 Internship\\Projects\\Prospective Client Analysis\\Python Outsourcing\\kfold_tfidf_generator.py"
-n_process = (len(df[df["Source"] == "Salesforce"]) // 1000) + 1
-print(df["Source"].unique())
-command = f'"{python_env_path}" "{script_path}" --i "{input_path}" --o "{output_path}" --np {n_process}'
-# !{command}
-
-df = pd.read_json(output_path, orient="records")
-
-# Alteryx.write(df, 1)

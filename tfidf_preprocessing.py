@@ -5,8 +5,7 @@ from configparser import ConfigParser
 
 
 class TFIDFPreprocessing:
-    def __init__(self, df, n_process=1, config_path="C:/Users/sdosi/ISN Summer 2024 Internship/Projects/"
-                                                    "Prospective Client Analysis/Python Outsourcing/config.ini"):
+    def __init__(self, df, n_process=1, config_path="config/config.ini"):
         self.config = ConfigParser()
         self.config.read([config_path])
         self.input_column = self.config.get("TFIDF_PREPROCESSING", "input_column")

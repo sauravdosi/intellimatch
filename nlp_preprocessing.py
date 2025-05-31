@@ -11,8 +11,7 @@ from kfold_tfidf_generator import ArgParser as KFoldTFIDFArgParser
 class NLPPreprocessing(TFIDFPreprocessing):
     # Feature Engineering except for TFIDF
 
-    def __init__(self, df, n_process=3, config_path="C:/Users/sdosi/ISN Summer 2024 Internship/Projects/"
-                                                    "Prospective Client Analysis/Python Outsourcing/config.ini"):
+    def __init__(self, df, n_process=3, config_path="config/config.ini"):
         super().__init__(df, n_process=n_process)
         self.config = ConfigParser()
         self.config.read([config_path])

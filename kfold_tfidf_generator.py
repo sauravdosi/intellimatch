@@ -9,8 +9,7 @@ from configparser import ConfigParser
 
 
 class KFoldTFIDFGenerator:
-    def __init__(self, df, config_path="C:/Users/sdosi/ISN Summer 2024 Internship/Projects/"
-                                       "Prospective Client Analysis/Python Outsourcing/config.ini"):
+    def __init__(self, df, config_path="config/config.ini"):
         self.config = ConfigParser()
         self.config.read([config_path])
         self.source_column = self.config.get("KFOLD_TFIDF_GENERATOR", "source_column")
@@ -103,7 +102,7 @@ class ArgParser:
         self.args = vars(self.parser.parse_args())
 
         if not os.path.isfile(self.args["i"]):
-            self.parser.error(f"The input file {self.args["i"]} does not exist.")
+            self.parser.error(f"The input file {self.args['i']} does not exist.")
 
         output_dir = os.path.dirname(self.args["o"])
         if output_dir and not os.path.isdir(output_dir):
