@@ -1,6 +1,6 @@
 import argparse
 import copy
-from ast import literal_eval as lit
+import ast
 import pandas as pd
 from tensorflow.keras.layers import Input, LSTM, Dense, Concatenate, Bidirectional, Attention, Dropout, \
     BatchNormalization
@@ -34,7 +34,7 @@ class KeywordClassifier:
         self.early_stopping = EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True)
         self.lr_scheduler = LearningRateScheduler(
             lambda epoch, lr: float(lr * math.exp(-0.01)) if epoch > 10 else float(lr))
-        self.models_directory = ("models")
+        self.models_directory = "models/"
 
         self.data_pred = pd.DataFrame()
 
@@ -49,12 +49,20 @@ class KeywordClassifier:
 
         self.predict()
 
+    @staticmethod
+    def safe_lit(x):
+        return ast.literal_eval(x) if isinstance(x, str) else x
+
+
     def preprocess_data(self):
         # Feature encoding
-        self.data["tfidf"] = self.data["tfidf"].apply(lit)
-        self.data["pos_num"] = self.data["pos_num"].apply(lit)
-        self.data["word_vecs"] = self.data["word_vecs"].apply(lit)
-        self.data["words"] = self.data["words"].apply(lit)
+        for col in ["tfidf", "pos_num", "word_vecs", "words"]:
+            self.data[col] = self.data[col].apply(self.safe_lit)
+        #
+        # self.data["tfidf"] = self.data["tfidf"].apply(lit)
+        # self.data["pos_num"] = self.data["pos_num"].apply(lit)
+        # self.data["word_vecs"] = self.data["word_vecs"].apply(lit)
+        # self.data["words"] = self.data["words"].apply(lit)
 
         # Offsetting to account for one-hot encoding
         self.data["pos_num_modified"] = self.data["pos_num"].apply(lambda x: [int(i) + 1 for i in x])

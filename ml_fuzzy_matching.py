@@ -10,14 +10,16 @@ from pyphonetics import Metaphone
 from kfold_tfidf_generator import ArgParser as KFoldTFIDFArgParser
 
 
-class TFIDFFuzzyMatching:
+class MLFuzzyMatching:
     def __init__(self, df, refer_company_column="CompanyName", matched_company_name="Matched Company Name",
                  self_match=False):
-        self.infer_df = df[df["Source"] == "Salesforce"]
-        self.reference_df = df[(df["Source"] == "ISN Database") & (df["HasOwnerRole"] == 1)]
-        print(len(self.reference_df))
-        if "CompanyName" in self.infer_df.columns.tolist():
-            self.infer_df = self.infer_df.rename(columns={"CompanyName": "AHC Company Name"})
+        if not df.empty:
+            self.infer_df = df[df["Source"] == "Salesforce"]
+            self.reference_df = df[(df["Source"] == "ISN Database") & (df["HasOwnerRole"] == 1)]
+            print(len(self.reference_df))
+            if "CompanyName" in self.infer_df.columns.tolist():
+                self.infer_df = self.infer_df.rename(columns={"CompanyName": "AHC Company Name"})
+
         # Keyword weights for the comparison and contribution of each keyword class towards the match score
         self.keyword_weights = {"0": 0.85, "1": 0.1, "2": 0.05}
         self.metaphone = Metaphone()
@@ -29,6 +31,11 @@ class TFIDFFuzzyMatching:
         df_chunks = self.split_dataframe(self.infer_df, n_process)
 
         print(len(df_chunks))
+
+        # for i, my_df in enumerate(df_chunks):
+        #     print(i)
+        #     print(my_df.columns.tolist())
+
         pool = mp.Pool(processes=n_process)
         if self.self_match:
             result_chunks = pool.map(self.match_self, df_chunks)
@@ -52,7 +59,7 @@ class TFIDFFuzzyMatching:
 
     def match_self(self, infer_df):
         if not infer_df.empty:
-            print(len(infer_df))
+            # print(len(infer_df))
             infer_df["fuzzy_inference"] = infer_df.apply(
                 lambda x: self.infer_fuzz_self(x["labels_dict"], self.reference_df) if x["cleaned_words"]
                 else {}, axis=1)
@@ -77,8 +84,8 @@ class TFIDFFuzzyMatching:
         sort_df = reference_df_copy[(reference_df_copy["match_type"] == "Match")
                                     | (reference_df_copy["match_type"] == "Alias")][[
             self.refer_company_column, "match_type"]]
-        print(labels_dict2)
-        print(sort_df)
+        # print(labels_dict2)
+        # print(sort_df)
         sort_df = sort_df.sort_values(
             by=self.refer_company_column, key=lambda x: x.str.len(), ascending=False).reset_index(drop=True).head(1)
         return sort_df.to_dict(orient="records") if not sort_df.empty else {}
@@ -90,6 +97,7 @@ class TFIDFFuzzyMatching:
                 lambda x: self.infer_fuzz(x["labels_dict"], self.reference_df) if x["cleaned_words"]
                 else {}, axis=1)
 
+            # print("check")
             infer_df = infer_df.explode("fuzzy_inference")
             infer_df[self.matched_company_name] = infer_df["fuzzy_inference"].apply(
                 lambda x: x[self.refer_company_column] if type(x) == dict and x else "")
@@ -101,14 +109,14 @@ class TFIDFFuzzyMatching:
                 lambda x: x["fuzzy_score"] if type(x) == dict and x else "")
             infer_df["Match Category"] = infer_df["fuzzy_inference"].apply(
                 lambda x: x["match_type"] if type(x) == dict and x else "")
-            infer_df["Matched Company ID_CI"] = infer_df["fuzzy_inference"].apply(
-                lambda x: x["ID_CI"] if type(x) == dict and x else "")
+            # infer_df["Matched Company ID_CI"] = infer_df["fuzzy_inference"].apply(
+            #     lambda x: x["ID_CI"] if type(x) == dict and x else "")
             infer_df["Matched Company ISN ID"] = infer_df["fuzzy_inference"].apply(
                 lambda x: x["CompanyID"] if type(x) == dict and x else "")
-            infer_df["Matched from Database Table"] = infer_df["fuzzy_inference"].apply(
-                lambda x: x["Database Table"] if type(x) == dict and x else "")
-            infer_df["Matched Demo Prospect Client"] = infer_df["fuzzy_inference"].apply(
-                lambda x: x["isDemo"] if type(x) == dict and x else "")
+            # infer_df["Matched from Database Table"] = infer_df["fuzzy_inference"].apply(
+            #     lambda x: x["Database Table"] if type(x) == dict and x else "")
+            # infer_df["Matched Demo Prospect Client"] = infer_df["fuzzy_inference"].apply(
+            #     lambda x: x["isDemo"] if type(x) == dict and x else "")
 
             infer_df = infer_df.drop(columns=["fuzzy_inference"])
 
@@ -130,10 +138,18 @@ class TFIDFFuzzyMatching:
             lambda x: self.calculate_fuzzy_score_new(x["labels_dict"], labels_dict2), axis=1, result_type="expand")
 
         sort_df = reference_df_copy[
-            [self.refer_company_column, "labels_dict", "ID_CI", "CompanyID", "normalized_tfidf", "fuzzy_score",
+            [self.refer_company_column, "labels_dict",
+             # "ID_CI",
+             "CompanyID", "normalized_tfidf", "fuzzy_score",
              "match_type",
-             "Database Table", "isDemo"]].sort_values(by=["fuzzy_score", "Database Table"],
-                                                      ascending=[False, True]).head(1)
+             # "Database Table",
+             # "isDemo"
+             ]].sort_values(by=["fuzzy_score",
+                                # "Database Table"
+                                ],
+                                                      ascending=[False,
+                                                                 # True
+                                                                 ]).head(1)
         # print(sort_df)
         return sort_df.to_dict(orient="records") if not sort_df.empty else {}
 
@@ -377,54 +393,18 @@ class TFIDFFuzzyMatching:
             else:
                 total_fuzzy_score.append(np.sum(np.transpose(hot_fuzzy_matrix)))
 
-        #     score_matrix = np.multiply(tfidf_matrix, fuzzy_matrix)
-        # #     print(score_matrix)
-        #     total_fuzzy_score = np.sum(np.max(score_matrix, axis=0)) * 100
-
-        # #     if list1.size < list2.size:
-        # #         total_fuzzy_score -= 2 * (list2.size - list1.size)
-        # print(total_fuzzy_score)
-        # print(penalty)
         total_fuzzy_score = total_fuzzy_score if argmax_idx2 is None else sum(total_fuzzy_score) / 2
 
-        # First keyword match logic
-        # if total_fuzzy_score < 0.85 and list(reference_dict.keys())[0] == list(test_dict.keys())[0]:
-        #     # total_fuzzy_score = 0.85
-        #     if len(reference_dict) > len(test_dict):
-        #         surplus = total_fuzzy_score - list(reference_dict.values())[0]
-        #     elif len(reference_dict) < len(test_dict):
-        #         surplus = total_fuzzy_score - list(test_dict.values())[0]
-        #     else:
-        #         surplus = total_fuzzy_score - (list(reference_dict.values())[0] + list(test_dict.values())[0]) / 2
-        #
-        #     total_fuzzy_score = 0.85 + surplus * 0.15
-        # print(surplus)
-
-        # print(penalty)
-        # return (total_fuzzy_score * 100) + penalty if (total_fuzzy_score * 100) + penalty > 0 else 0
         return total_fuzzy_score * 100
 
     def fuzzy_score(self, s1, s2, labels_dict1={}, labels_dict2={}):
-        # if (s1 == "S&C" or s1 == "ELECTRIC") and (s2 == "GENERAL" or s2 == "ELECTRIC"):
-        # print("HEY!\nHEY\nHEY!" if s2 == "GENERAL" else "")
-        # print("HEY!\nHEY\nHEY!" if s2 == "ELECTRIC" else "")
-        # print(f"Reference word: {s1}")
-        # print(f"Test word: {s2}")
-
         if type(labels_dict1) == str and type(labels_dict2) == str:
             labels_dict1 = ast.literal_eval(labels_dict1)
             labels_dict2 = ast.literal_eval(labels_dict2)
 
-        # print("Reference Dict")
-        # print(labels_dict1)
-        # print("Test Dict")
-        # print(labels_dict2)
 
         label1 = labels_dict1[s1]  # reference, more accurate predictions
         label2 = labels_dict2[s2]  # test
-
-        # print(f"Label 1: {label1}")
-        # print(f"Label 2: {label2}")
 
         label_counts1, label_counts2 = {}, {}
 
@@ -432,12 +412,8 @@ class TFIDFFuzzyMatching:
             label_counts1.update({str(i): self.count_value_in_dict(labels_dict1, i)})
             label_counts2.update({str(i): self.count_value_in_dict(labels_dict2, i)})
 
-        # print(f"Label counts 1: {label_counts1}")
-        # print(f"Label counts 2: {label_counts2}")
-
         fuzz_ratio = fuzz.ratio(s1, s2) / 100 if fuzz.ratio(s1, s2) >= 95 else 0
 
-        # print(f"fuzz ratio: {fuzz_ratio}")
 
         if fuzz_ratio >= 0.95:
             if len(labels_dict2) == 1:
@@ -467,8 +443,6 @@ class TFIDFFuzzyMatching:
 
         return fuzz_ratio
 
-        # else:
-        #     return 0
 
     @staticmethod
     def count_value_in_dict(d, value):
@@ -493,7 +467,7 @@ if __name__ == "__main__":
 
     args = ArgParser().args
     df = pd.read_json(args["i"], orient="records")
-    tfidf_fuzzy_matching = TFIDFFuzzyMatching(df)
+    tfidf_fuzzy_matching = MLFuzzyMatching(df)
     print(tfidf_fuzzy_matching.reference_df)
 
     # Reference data is first only subscribed HCs

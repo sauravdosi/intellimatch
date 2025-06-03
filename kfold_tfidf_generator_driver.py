@@ -2,6 +2,7 @@ import time
 import re
 import multiprocessing as mp
 from typing import List, Union, Optional
+from configparser import ConfigParser
 import pandas as pd
 from kfold_tfidf_generator import KFoldTFIDFGenerator
 
@@ -18,7 +19,8 @@ class KFoldTFIDFGeneratorDriver:
 
     def __init__(self,
                  input_source: Union[str, pd.DataFrame],
-                 n_process: Optional[int] = None) -> None:
+                 n_process: Optional[int] = None,
+                 config="config/config.ini") -> None:
         """
         Initialize the pipeline with a data source and optional number of processes.
 
@@ -29,6 +31,9 @@ class KFoldTFIDFGeneratorDriver:
         self.input_source = input_source
         self.n_process = n_process
         self.df: pd.DataFrame = pd.DataFrame()
+        self.config = ConfigParser()
+        self.config.read(config)
+        self.reference_column = self.config.get("KFOLD_TFIDF_GENERATOR", "reference_source")
 
     def load_data(self) -> pd.DataFrame:
         """
@@ -70,7 +75,7 @@ class KFoldTFIDFGeneratorDriver:
         text = record["CompanyName"]
         companies = [text]
 
-        if record.get("Source") == "source1":
+        if record.get("Source") == self.reference_column:
             companies = []
             if isinstance(text, str):
                 text = text.strip()
