@@ -1,36 +1,11 @@
-import argparse
-import logging
-from configparser import ConfigParser
-
 import pandas as pd
 import multiprocessing as mp
 from configparser import ConfigParser
-from keyword_classifier import KeywordClassifier
-from kfold_tfidf_generator_driver import KFoldTFIDFGeneratorDriver
-from nlp_preprocessing import NLPPreprocessing
-from ml_fuzzy_matching import MLFuzzyMatching
-from postprocess import PostProcess
-
-
-# def setup_logging():
-#     """
-#     Configure logging settings for the workflow.
-#     """
-#     pass
-#
-#
-# def parse_arguments():
-#     """
-#     Parse command-line arguments and return namespace.
-#     """
-#     parser = argparse.ArgumentParser(description="Controller for the TF-IDF preprocessing and generation workflow.")
-#     parser.add_argument('--input', '-i', type=str, required=True,
-#                         help='Path to input Excel file or JSON data source.')
-#     parser.add_argument('--output', '-o', type=str, required=True,
-#                         help='Path where the results will be saved.')
-#     parser.add_argument('--n_process', '-n', type=int, default=None,
-#                         help='Number of processes for TF-IDF generation.')
-#     return parser.parse_args()
+from src.keyword_classifier import KeywordClassifier
+from src.kfold_tfidf_generator_driver import KFoldTFIDFGeneratorDriver
+from src.nlp_preprocessing import NLPPreprocessing
+from src.ml_fuzzy_matching import MLFuzzyMatching
+from src.postprocess import PostProcess
 
 
 class IntelliMatchController:
@@ -64,9 +39,11 @@ class IntelliMatchController:
     def nlp_preprocessing_run(self):
         n_process = (len(self.df) // 50000) + 1
         n_process = 4
+        print("Running NLP Preprocessing...")
         self.nlp_preprocessing = NLPPreprocessing(self.df, n_process=n_process)
         self.nlp_preprocessing.multiprocess_preprocess()
         result_df = self.nlp_preprocessing.result_df
+        print("Controller NLP Preprocessing done.")
 
         return result_df
 
@@ -163,15 +140,12 @@ class IntelliMatchController:
         """
         Full execution flow: setup, pipeline run, and saving.
         """
-        # setup_logging()
-        args = None  # placeholder for parsed args
         self.initialize_pipeline()
         result_df = self.execute_pipeline()
         self.save_results(result_df)
 
 
 if __name__ == '__main__':
-    # args = parse_arguments()
     mp.freeze_support()
     controller = IntelliMatchController("data/pretfidf_prodtest.xlsx", "data/postnlppreprocessing.xlsx")
     controller.run()
