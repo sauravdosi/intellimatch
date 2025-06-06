@@ -1,0 +1,5 @@
+[server]
+# turn off the recursive watcher that trips over torch._classes
+fileWatcherType = "none"
+# you probably already have this, but just in case:
+enableCORS = false
