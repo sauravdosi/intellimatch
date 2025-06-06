@@ -4,19 +4,90 @@ import io
 import time
 import multiprocessing as mp
 import base64
+from streamlit_lottie import st_lottie
+import requests
+from PIL import Image
 from intellimatch_controller import IntelliMatchController
 
-st.set_page_config(page_title="IntelliMatch Demo", layout="wide")
-st.title("🧠 IntelliMatch: Company Matching Demo")
-st.markdown("IntelliMatch is an end-to-end Streamlit demo that ingests your company lists, runs K-Fold TF-IDF, "
-            "NLP Preprocessing, Keyword Classification, and ML Fuzzy Matching to accurately enrich and match records between"
-            "the two sources with interactive per-stage previews, demo workflows and downloadable Excel output.")
-st.markdown("### Get started: \n"
-            "1. Make sure your input Excel file has the following columns: Company, Source[source1, source2]\n"
-            "2. You can set Preview sample size and Parallel process count parameters as required.\n"
-            "2. After uploading input file, click on Start Pipeline.\n"
-            "3. At each stage, a sample workflow example will be visible as you wait for the stage to complete.\n"
-            "4. Download results in Excel file once the pipeline is executed.")
+st.set_page_config(page_title="🧠 IntelliMatch", layout="wide")
+
+# ——————————————————————————————————————————
+# 🎆 Animated Header
+# ——————————————————————————————————————————
+@st.cache_data
+def load_lottie_url(url):
+    r = requests.get(url)
+    return r.json()
+
+lottie_brain = load_lottie_url("https://assets2.lottiefiles.com/packages/lf20_jcikwtux.json")
+
+col1, col2 = st.columns([1, 3], gap="small")
+
+with col1:
+    st_lottie(lottie_brain, height=150, key="brain")
+
+with col2:
+    st.markdown(
+        """
+        <style>
+          @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .intellimatch-title h1,
+          .intellimatch-title p {
+            color: var(--text-color);
+            transition: transform 0.3s ease;
+          }
+          .intellimatch-title h1:hover {
+            transform: scale(1.05);
+          }
+          .intellimatch-title p:hover {
+            transform: scale(1.02);
+          }
+        </style>
+
+        <div class="intellimatch-title" style="animation: fadeInDown 1s ease-out; text-align:left;">
+          <h1 style="font-size:3em; margin:0;">🧠 IntelliMatch</h1>
+          <p style="font-size:1.3em; margin-top:0.3em;">
+            An end-to-end company name matching demo with live animations 🎉
+          </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+# ——————————————————————————————————————————
+# 🌟 One-liner
+# ——————————————————————————————————————————
+st.info("**IntelliMatch** is an end-to-end Streamlit demo that ingests your company lists, runs **K-Fold TF-IDF**, "
+            "**NLP Preprocessing**, **Keyword Classification**, and **ML Fuzzy Matching** to accurately enrich and match records between"
+            "the two sources with interactive per-stage previews, demo workflows and downloadable Excel report! 🚀")
+# ——————————————————————————————————————————
+# 📚 Get Started (Emoji-rich)
+# ——————————————————————————————————————————
+with st.expander("🛠️ How to Get Started"):
+    st.markdown("""
+    1. 🗂️ **Prepare your Excel**  
+       • **Company** column (e.g. “Acme Corp”)  
+       • **Source** column (`source1`, `source2`, …)
+
+    2. ⚙️ **Configure** in the sidebar  
+       • **🔎 Preview size:** how many rows to peek at  
+       • **⚡ Parallel processes:** tune for your machine
+
+    3. 📤 **Upload & Start**  
+       • Click **Upload** and then **▶ Start Pipeline**
+
+    4. 👀 **Watch it happen**  
+       • At each of the 6 stages you’ll see:  
+         – A sample table or chart  
+         – An animated GIF of the mini-workflow  
+         – Timing info ⏱️
+
+    5. 📥 **Download** your final Excel report  
+       • Fully enriched, matched & ready to share!
+    """)
+
 
 # Sidebar
 st.sidebar.header("⚙️ Configuration")
@@ -60,6 +131,8 @@ if st.session_state.stage >= 1:
         f'<img src="data:image/gif;base64,{data_url_tfidf}" alt="TF-IDF Workflow">',
         unsafe_allow_html=True,
     )
+    # you can also add an extra blank line if needed:
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if st.session_state.df_tfidf is None:
         start = time.time()
@@ -102,6 +175,8 @@ if st.session_state.stage >= 2:
         f'<img src="data:image/gif;base64,{data_url_nlp}" alt="NLP Preprocessing Workflow">',
         unsafe_allow_html=True,
     )
+    # you can also add an extra blank line if needed:
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if st.session_state.df_nlp is None:
         start = time.time()
@@ -135,6 +210,8 @@ if st.session_state.stage >= 3:
         f'<img src="data:image/gif;base64,{data_url_kw}" alt="Keyword Classifier Workflow">',
         unsafe_allow_html=True,
     )
+    # you can also add an extra blank line if needed:
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if st.session_state.df_kw is None:
         start = time.time()
@@ -167,6 +244,8 @@ if st.session_state.stage >= 4:
         f'<img src="data:image/gif;base64,{data_url_fuzzy}" alt="ML Fuzzy Matching Workflow">',
         unsafe_allow_html=True,
     )
+    # you can also add an extra blank line if needed:
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if st.session_state.df_fuzzy is None:
         start = time.time()
@@ -202,6 +281,8 @@ if st.session_state.stage >= 5:
         f'<img src="data:image/gif;base64,{data_url_post}" alt="Postprocess Workflow">',
         unsafe_allow_html=True,
     )
+    # you can also add an extra blank line if needed:
+    st.markdown("<br>", unsafe_allow_html=True)
 
     if st.session_state.df_post is None:
         start = time.time()
