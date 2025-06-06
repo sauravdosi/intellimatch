@@ -146,7 +146,7 @@ if st.session_state.stage >= 1:
     st.dataframe(st.session_state.df_tfidf.head(sample_size))
 
     # example visualization
-    ex = example_row(st.session_state.df_tfidf)
+    # ex = example_row(st.session_state.df_tfidf)
     if ex is not None and "tfidf" in ex.columns:
         st.subheader("Example TF-IDF Weights")
         # assume normalized_tfidf is dict
@@ -158,7 +158,7 @@ if st.session_state.stage >= 1:
                 (st.session_state.df_tfidf["Source"] == st.session_state.controller.reference_column)
                 & (st.session_state.df_tfidf["HasOwnerRole"] == 1)
             ],
-            st.session_state.df_tfidf[st.session_state.df_tfidf["Source"] == "Salesforce"]
+            st.session_state.df_tfidf[st.session_state.df_tfidf["Source"] == "Salesforce"].head(1000)
         ])
         st.session_state.stage = 2
 
