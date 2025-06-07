@@ -69,7 +69,7 @@ with st.expander("🛠️ How to Get Started"):
     st.markdown("""
     1. 🗂️ **Prepare your Excel**  
        • **Company** column (e.g. “Acme Corp”)  
-       • **Source** column (`source1`, `source2`, …)
+       • **Source** column (`inference`, `reference`) - finds one reference company name for every inference company name
 
     2. ⚙️ **Configure** in the sidebar  
        • **🔎 Preview size:** how many rows to peek at  
@@ -147,18 +147,17 @@ if st.session_state.stage >= 1:
 
     # example visualization
     # ex = example_row(st.session_state.df_tfidf)
-    if ex is not None and "tfidf" in ex.columns:
-        st.subheader("Example TF-IDF Weights")
-        # assume normalized_tfidf is dict
-        weights = ex["normalized_tfidf"].values[0]
-        st.bar_chart(pd.Series(weights).sort_values(ascending=False).head(20))
+    # if ex is not None and "tfidf" in ex.columns:
+    #     st.subheader("Example TF-IDF Weights")
+    #     # assume normalized_tfidf is dict
+    #     weights = ex["normalized_tfidf"].values[0]
+    #     st.bar_chart(pd.Series(weights).sort_values(ascending=False).head(20))
     if st.button("▶ Next: NLP Preprocessing"):
         st.session_state.controller.df = pd.concat([
             st.session_state.df_tfidf[
                 (st.session_state.df_tfidf["Source"] == st.session_state.controller.reference_column)
-                & (st.session_state.df_tfidf["HasOwnerRole"] == 1)
             ],
-            st.session_state.df_tfidf[st.session_state.df_tfidf["Source"] == "Salesforce"].head(1000)
+            st.session_state.df_tfidf[st.session_state.df_tfidf["Source"] == st.session_state.controller.inference_column]
         ])
         st.session_state.stage = 2
 

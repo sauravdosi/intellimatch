@@ -35,6 +35,7 @@ class IntelliMatchController:
         self.config = ConfigParser()
         self.config.read(config)
         self.reference_column = self.config.get("KFOLD_TFIDF_GENERATOR", "reference_source")
+        self.inference_column = self.config.get("KFOLD_TFIDF_GENERATOR", "infer_source")
 
     def nlp_preprocessing_run(self):
         n_process = (len(self.df) // 50000) + 1
@@ -100,7 +101,7 @@ class IntelliMatchController:
         print(self.df)
         # self.df.to_csv("data/kfold_tfidf.csv", index=False)
 
-        df1 = self.df[((self.df["Source"] == self.reference_column) & (self.df["HasOwnerRole"] == 1))][:100]
+        df1 = self.df[((self.df["Source"] == self.reference_column) & (self.df["HasOwnerRole"] == 1))][:]
         df2 = self.df[(self.df["Source"] == "Salesforce")][:100]
 
         self.df = pd.concat([df1, df2])
