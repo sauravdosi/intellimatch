@@ -117,8 +117,8 @@ class MLFuzzyMatching:
                 lambda x: x["match_type"] if type(x) == dict and x else "")
             # infer_df["Matched Company ID_CI"] = infer_df["fuzzy_inference"].apply(
             #     lambda x: x["ID_CI"] if type(x) == dict and x else "")
-            infer_df["Matched Company ISN ID"] = infer_df["fuzzy_inference"].apply(
-                lambda x: x["CompanyID"] if type(x) == dict and x else "")
+            # infer_df["Matched Company ISN ID"] = infer_df["fuzzy_inference"].apply(
+            #     lambda x: x["CompanyID"] if type(x) == dict and x else "")
             # infer_df["Matched from Database Table"] = infer_df["fuzzy_inference"].apply(
             #     lambda x: x["Database Table"] if type(x) == dict and x else "")
             # infer_df["Matched Demo Prospect Client"] = infer_df["fuzzy_inference"].apply(
@@ -146,7 +146,8 @@ class MLFuzzyMatching:
         sort_df = reference_df_copy[
             [self.refer_company_column, "labels_dict",
              # "ID_CI",
-             "CompanyID", "normalized_tfidf", "fuzzy_score",
+             # "CompanyID",
+             "normalized_tfidf", "fuzzy_score",
              "match_type",
              # "Database Table",
              # "isDemo"
