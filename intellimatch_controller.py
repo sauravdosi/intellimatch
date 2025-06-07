@@ -64,7 +64,7 @@ class IntelliMatchController:
 
         # Reference data is first only subscribed HCs
         # k + l (all infer df) -> m (only subscribed HCs)
-        self.ml_fuzzy_matching.reference_df = self.df[(self.df["Source"] == self.reference_column) & (self.df["HasOwnerRole"] == 1)]
+        self.ml_fuzzy_matching.reference_df = self.df[(self.df["Source"] == self.reference_column)]
                                                       # & (self.df["Database Table"] != "DMSalesforce.dim.SalesforceAccount")]
 
         print(self.ml_fuzzy_matching.infer_df)
