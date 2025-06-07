@@ -1,4 +1,5 @@
 import argparse
+import configparser
 import time
 from fuzzywuzzy import fuzz
 import numpy as np
@@ -12,10 +13,15 @@ from src.kfold_tfidf_generator import ArgParser as KFoldTFIDFArgParser
 
 class MLFuzzyMatching:
     def __init__(self, df, refer_company_column="CompanyName", matched_company_name="Matched Company Name",
-                 self_match=False):
+                 self_match=False, config="config/config.ini"):
+        self.config = configparser.ConfigParser()
+        self.config.read(config)
+        self.reference_column = self.config.get("KFOLD_TFIDF_GENERATOR", "reference_source")
+        self.inference_column = self.config.get("KFOLD_TFIDF_GENERATOR", "infer_source")
+
         if not df.empty:
-            self.infer_df = df[df["Source"] == "Salesforce"]
-            self.reference_df = df[(df["Source"] == "ISN Database") & (df["HasOwnerRole"] == 1)]
+            self.infer_df = df[df["Source"] == self.inference_column]
+            self.reference_df = df[(df["Source"] == self.reference_column)]
             print(len(self.reference_df))
             if "CompanyName" in self.infer_df.columns.tolist():
                 self.infer_df = self.infer_df.rename(columns={"CompanyName": "AHC Company Name"})

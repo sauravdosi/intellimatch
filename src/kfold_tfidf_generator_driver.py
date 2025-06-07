@@ -34,6 +34,7 @@ class KFoldTFIDFGeneratorDriver:
         self.config = ConfigParser()
         self.config.read(config)
         self.reference_column = self.config.get("KFOLD_TFIDF_GENERATOR", "reference_source")
+        self.inference_column = self.config.get("KFOLD_TFIDF_GENERATOR", "infer_source")
 
     def load_data(self) -> pd.DataFrame:
         """
@@ -127,7 +128,7 @@ class KFoldTFIDFGeneratorDriver:
 
         # Determine number of processes if not provided
         num_process = self.n_process if self.n_process is not None else (
-            (len(processed_df[processed_df["Source"] == "Salesforce"]) // 10000) + 1
+            (len(processed_df[processed_df["Source"] == self.inference_column]) // 10000) + 1
         )
 
         # Generate K-Fold TF-IDF
