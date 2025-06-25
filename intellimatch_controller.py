@@ -101,7 +101,7 @@ class IntelliMatchController:
 
     def keyword_classifier_run(self):
         mode = "test"
-        model = "new.weights.h5"
+        model = "keyword_classifier.weights.h5"
         mask = (
                 (self.df[self.source_column] == "inference")
                 | (self.df[self.source_column] == "reference")
