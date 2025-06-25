@@ -9,26 +9,35 @@ from configparser import ConfigParser
 
 
 class KFoldTFIDFGenerator:
-    def __init__(self, df, config_path="config/config.ini"):
+    def __init__(self, df, db_df_path="data/tfidf_reference.json", config_path="config/config.ini"):
         self.config = ConfigParser()
         self.config.read([config_path])
         self.source_column = self.config.get("KFOLD_TFIDF_GENERATOR", "source_column")
         self.infer_source = self.config.get("KFOLD_TFIDF_GENERATOR", "infer_source")
         self.reference_source = self.config.get("KFOLD_TFIDF_GENERATOR", "reference_source")
+        self.database_source = self.config.get("KFOLD_TFIDF_GENERATOR", "database_source")
         self.fold_size = int(self.config.get("KFOLD_TFIDF_GENERATOR", "fold_size"))
 
+        db_df = pd.read_json(db_df_path, orient="records")
+
+        df = pd.concat([df, db_df], ignore_index=True)
+        print(f"Concat df: {df.shape}")
         self.tfidf_preprocessing = TFIDFPreprocessing(df, n_process=3)
         self.tfidf_generator = TFIDFGenerator(df, preprocess=False)
         self.tfidf_preprocessing.multiprocess_preprocess()
         self.df = self.tfidf_preprocessing.result_df
-        self.sf_df = self.df[self.df[self.source_column] == self.infer_source]
-        self.db_df = self.df[self.df[self.source_column] == self.reference_source]
-        self.tfidf_generator.preprocessed_df = self.db_df
-        self.tfidf_generator.compute_norm_tfidf_df()
-        self.db_tfidf_df = self.tfidf_generator.tfidf_df
+        self.sf_df = self.df[(self.df[self.source_column] == self.infer_source) | (self.df[self.source_column] == self.reference_source)]
+        self.db_df = self.df[self.df[self.source_column] == self.database_source]
+        print(f"SF df: {self.sf_df.shape}")
+        # self.db_df = db_df
+        # self.tfidf_generator.preprocessed_df = self.db_df
+        # self.tfidf_generator.compute_norm_tfidf_df()
+        # self.db_tfidf_df = self.tfidf_generator.tfidf_df
+        self.db_tfidf_df = db_df
 
     @staticmethod
     def split_dataframe(df, n_process):
+        assert isinstance(n_process, int), f"n_process must be int, got {type(n_process)}"
         chunk_size = len(df) // n_process
         return [df[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
 
@@ -53,7 +62,8 @@ class KFoldTFIDFGenerator:
         return result_df
 
     def run(self, df):
-        partitions = self.k_fold_partition_df(df[df[self.source_column] == self.infer_source])
+        partitions = self.k_fold_partition_df(df[(df[self.source_column] == self.infer_source) |
+                                                 (df[self.source_column] == self.reference_source)])
 
         k_fold_tfidf_dfs = []
 
@@ -62,7 +72,8 @@ class KFoldTFIDFGenerator:
             self.tfidf_generator.preprocessed_df = k_fold_df
             self.tfidf_generator.compute_norm_tfidf_df()
             k_fold_tfidf_df = self.tfidf_generator.tfidf_df
-            k_fold_tfidf_dfs.append(k_fold_tfidf_df[k_fold_tfidf_df[self.source_column] == self.infer_source])
+            k_fold_tfidf_dfs.append(k_fold_tfidf_df[(k_fold_tfidf_df[self.source_column] == self.infer_source) |
+                                    (k_fold_tfidf_df[self.source_column] == self.reference_source)])
 
         print(len(self.db_tfidf_df))
         print(len(k_fold_tfidf_dfs))

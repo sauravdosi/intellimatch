@@ -28,8 +28,8 @@ class PostProcess:
         """
         Split the main df into unmatched and matched sets based on 'Match Score'.
         """
-        self.unmatched_df = self.df[self.df["Match Score"] < 85]
-        self.matches_df = self.df[self.df["Match Score"] >= 85]
+        self.unmatched_df = self.df[self.df["Match Score"] < 50]
+        self.matches_df = self.df[self.df["Match Score"] >= 50]
 
     def merge_active_hcs(self):
         """
@@ -108,6 +108,32 @@ class PostProcess:
 
         return final
 
+    @staticmethod
+    def finalize(df):
+        reference_columns = [
+            "AHC Company Name",
+            "Source",
+            "Matched Company Name",
+            "Match Score",
+            "Match Category",
+            "Standardized Alias",
+            "Count",
+        ]
+
+        # select only the desired columns
+        df_final = df[reference_columns]
+
+        df_final = df_final.rename(
+            columns={"Matched Company Name": "Reference Company Name", "AHC Company Name": "Inference Company Name"})
+
+        # sort by Match Score descending
+        df_final = df_final.sort_values("Match Score", ascending=False)
+
+        # optional: reset the index so it goes 0…N-1
+        df_final = df_final.reset_index(drop=True)
+
+        return df_final
+
     def run(self) -> pd.DataFrame:
         """
         Execute the full workflow and return results.
@@ -117,7 +143,9 @@ class PostProcess:
         """
         self.split_matches()
         self.merge_active_hcs()
-        return self.concatenate_and_compute()
+        result_df = self.concatenate_and_compute()
+        return self.finalize(result_df)
+
 
 # Example usage:
 # pipeline = HistoricalMatchingPipeline(main_df, active_hcs_df)

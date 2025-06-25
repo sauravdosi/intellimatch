@@ -11,6 +11,7 @@ from tensorflow import math
 import numpy as np
 import time
 import re
+import os
 from configparser import ConfigParser
 from src.kfold_tfidf_generator import ArgParser as KFoldTFIDFArgParser
 
@@ -49,20 +50,56 @@ class KeywordClassifier:
 
         self.predict()
 
+    # @staticmethod
+    # def safe_lit(x):
+    #     return ast.literal_eval(x) if isinstance(x, str) else x
+
     @staticmethod
     def safe_lit(x):
-        return ast.literal_eval(x) if isinstance(x, str) else x
+        # If it’s already parsed (not a str), just return it
+        if not isinstance(x, str):
+            return x
+
+        # 1) Try pure literal_eval first (for plain lists, dicts, numbers…)
+        try:
+            return ast.literal_eval(x)
+        except (ValueError, SyntaxError):
+            pass
+
+        # 2) Fallback: use a very restricted eval that only knows about numpy.array
+        #    and the dtype name float32
+        #    This will safely parse array([...], dtype=float32) syntax.
+        return eval(
+            x,
+            {"__builtins__": None},  # no built‑ins
+            {"array": np.array, "float32": np.float32}
+        )
 
 
     def preprocess_data(self):
         # Feature encoding
         for col in ["tfidf", "pos_num", "word_vecs", "words"]:
-            self.data[col] = self.data[col].apply(self.safe_lit)
+            def try_lit(x):
+                try:
+                    return self.safe_lit(x)
+                except Exception as e:
+                    # Log column name, row index, and offending value
+                    # (you could use logging.debug/info here instead of print)
+                    print(
+                        f"Error parsing column={col!r}, index={x.name if hasattr(x, 'name') else 'unknown'}, value={x!r}")
+                    # re-raise so you see the full traceback
+                    raise
+
+            # apply with our wrapped version
+            # note: when you use Series.apply, the function sees just the value, so to capture the index:
+            # you can do `for idx, val in self.data[col].items(): ...` instead—see alternate below
+            self.data[col] = self.data[col].apply(try_lit)
         #
         # self.data["tfidf"] = self.data["tfidf"].apply(lit)
         # self.data["pos_num"] = self.data["pos_num"].apply(lit)
         # self.data["word_vecs"] = self.data["word_vecs"].apply(lit)
         # self.data["words"] = self.data["words"].apply(lit)
+        print(len(self.data))
 
         # Offsetting to account for one-hot encoding
         self.data["pos_num_modified"] = self.data["pos_num"].apply(lambda x: [int(i) + 1 for i in x])
@@ -80,6 +117,13 @@ class KeywordClassifier:
         # TFIDF batch normalization
         max_tfidf = max(tfidf_values)
         min_tfidf = min(tfidf_values)
+
+        # max_tfidf = 1284.0284526647
+        # min_tfidf = 0.16431612510000002
+
+        print(f"max_tfidf={max_tfidf}")
+        print(f"min_tfidf={min_tfidf}")
+
         self.data["tfidf_minmax_normalized"] = self.data["tfidf_values"].apply(
             lambda x: [(tfidf - min_tfidf) / (max_tfidf - min_tfidf) for tfidf in x])
 
@@ -114,6 +158,8 @@ class KeywordClassifier:
 
     def predict(self):
         if self.mode == "test":
+            print(f"⏱ loading weights from -> {os.path.abspath(self.model_load_path)}")
+            print(f"⏱ directory contents: {os.listdir(self.models_directory)}")
             self.model.load_weights(self.model_load_path)
 
         predictions = self.model.predict([self.X_embeddings, self.X_tfidf,

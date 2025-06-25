@@ -11,6 +11,14 @@ from intellimatch_controller import IntelliMatchController
 
 st.set_page_config(page_title="🧠 IntelliMatch", layout="wide")
 
+# define a mapping from label → colour (hex or CSS name)
+LABEL_COLORS = {
+    "LabelA": "#8dd3c7",
+    "LabelB": "#ffffb3",
+    "LabelC": "#bebada",
+    # …add all of your labels here…
+}
+
 # ——————————————————————————————————————————
 # 🎆 Animated Header
 # ——————————————————————————————————————————
@@ -109,6 +117,7 @@ if st.sidebar.button("▶ Start Pipeline"):
     else:
         df = pd.read_excel(input_file)
         ctrl = IntelliMatchController(input_path=df,
+                                      reference_path="data/tfidf_reference.json",
                                       output_path="data/intellimatch_results.xlsx",
                                       n_process=n_process)
         ctrl.df = df
@@ -196,6 +205,49 @@ if st.session_state.stage >= 2:
         st.session_state.controller.df = st.session_state.df_nlp
         st.session_state.stage = 3
 
+# 1) Define your label→colour map
+LABEL_COLORS = {
+    "Important": "#ffc0cb",
+    "Subsidiary": "#add8e6",
+    "Generic": "#ffffb3",
+    # …add all your labels here…
+}
+
+def render_keyword_tiles(row, text_col="words", label_col="Predicted Label Names"):
+    # row[text_col]  : list of keyword strings
+    # row[label_col]: list of corresponding label strings
+    html = "<div style='display:flex; flex-wrap: wrap; gap:8px; margin-bottom:12px;'>"
+    for kw, lbl in zip(row[text_col], row[label_col]):
+        col = LABEL_COLORS.get(lbl, "#dddddd")
+        html += (
+            f"<span style='"
+            f"display:inline-block; "
+            f"padding:6px 12px; "
+            f"background:{col}; "
+            f"border-radius:12px; "
+            f"font-size:0.95em; "
+            f"line-height:1; "
+            f"'>"
+            f"{kw}"
+            f"</span>"
+        )
+    html += "</div>"
+    st.markdown(html, unsafe_allow_html=True)
+
+def render_legend():
+    # builds a little legend showing each label swatch
+    legend_html = "<div style='display:flex; gap:16px; flex-wrap: wrap; margin-bottom:20px;'>"
+    for lbl, col in LABEL_COLORS.items():
+        legend_html += (
+            "<div style='display:flex; align-items:center; gap:4px;'>"
+            f"<span style='width:14px; height:14px; background:{col}; display:inline-block; border-radius:3px;'></span>"
+            f"<span style='font-size:0.9em;'>{lbl}</span>"
+            "</div>"
+        )
+    legend_html += "</div>"
+    st.markdown(legend_html, unsafe_allow_html=True)
+
+
 # Stage 3: Keyword Classification
 if st.session_state.stage >= 3:
     st.header("3️⃣ Keyword Classification")
@@ -224,8 +276,14 @@ if st.session_state.stage >= 3:
     ex = example_row(st.session_state.df_kw)
     if ex is not None:
         st.subheader("Example Prediction")
-        st.write("Predicted Labels:", ex["Predicted Labels"].values[0])
-        st.write("Predicted Label Names:", ex["Predicted Label Names"].values[0])
+        # 2) Render the tiles
+        render_keyword_tiles(ex.iloc[0])
+        # 3) Render the legend under the tiles
+        render_legend()
+
+        # 4) Add extra gap before the button
+        st.markdown("<div style='margin-top:24px;'></div>", unsafe_allow_html=True)
+
     if st.button("▶ Next: ML Fuzzy Matching"):
         st.session_state.controller.df = st.session_state.df_kw
         st.session_state.stage = 4
@@ -255,14 +313,23 @@ if st.session_state.stage >= 4:
 
     st.dataframe(st.session_state.df_fuzzy.head(sample_size))
 
-    ex = example_row(st.session_state.df_fuzzy)
-    if ex is not None and "Match Score" in ex:
-        st.subheader("Example Fuzzy Match")
-        st.write("Matched Company:", ex["Matched Company Name"].values[0])
-        st.write("Score:", ex["Match Score"].values[0])
-        # if there's a dict column, show it
-        if "Matched Company Labels Dict" in ex:
-            st.write(ex["Matched Company Labels Dict"].values[0])
+    # ---- new top‐example logic ----
+    df = st.session_state.df_fuzzy
+    if df is not None and "Match Score" in df.columns:
+        # 1) grab the one row with the highest match score
+        top = df.sort_values("Match Score", ascending=False).head(1)
+        if not top.empty:
+            ex = top.iloc[0]
+            st.subheader("Top Fuzzy Match Example")
+            st.write("**Inference Company Name:**", ex.get("AHC Company Name", "—"))
+            st.write("**Matched Company Name:**", ex.get("Matched Company Name", "—"))
+            st.write("**Match Score:**", ex["Match Score"])
+            st.write("**Match Category:**", ex["Match Category"])
+            # if you have extra data to show (e.g. labels dict), you can still include it:
+            # if "Matched Company Labels Dict" in ex:
+            #     st.write("Labels Dict:", ex["Matched Company Labels Dict"])
+
+    # ---- end top‐example logic ----
     if st.button("▶ Next: Postprocessing"):
         st.session_state.controller.df = st.session_state.df_fuzzy
         st.session_state.stage = 5
@@ -291,20 +358,13 @@ if st.session_state.stage >= 5:
         st.success(f"Done in {st.session_state.timings['post']:.1f}s")
 
     st.dataframe(st.session_state.df_post.head(sample_size))
-
-    if st.button("▶ Next: Final Results"):
-        st.session_state.controller.df = st.session_state.df_post
-        st.session_state.stage = 6
-
-# Stage 6: Final Results & Download
-if st.session_state.stage >= 6:
-    st.header("6️⃣ Final Results")
-    if st.session_state.final_df is None:
-        st.session_state.final_df = st.session_state.controller.df
-    st.dataframe(st.session_state.final_df.head(sample_size))
     # show total pipeline time
     total = sum(st.session_state.timings.values())
     st.write(f"**Total time:** {total:.1f}s")
+
+    if st.session_state.final_df is None:
+        st.session_state.final_df = st.session_state.controller.df
+
     # Download
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="xlsxwriter") as w:
@@ -316,3 +376,28 @@ if st.session_state.stage >= 6:
         file_name="intellimatch_results.xlsx",
         mime="application/vnd.openxmlformats-officedocument-spreadsheetml.sheet"
     )
+
+    # if st.button("▶ Next: Final Results"):
+    #     st.session_state.controller.df = st.session_state.df_post
+    #     st.session_state.stage = 6
+
+# # Stage 6: Final Results & Download
+# if st.session_state.stage >= 6:
+#     st.header("6️⃣ Final Results")
+#     if st.session_state.final_df is None:
+#         st.session_state.final_df = st.session_state.controller.df
+#     st.dataframe(st.session_state.final_df.head(sample_size))
+#     # show total pipeline time
+#     total = sum(st.session_state.timings.values())
+#     st.write(f"**Total time:** {total:.1f}s")
+#     # Download
+#     buf = io.BytesIO()
+#     with pd.ExcelWriter(buf, engine="xlsxwriter") as w:
+#         st.session_state.final_df.to_excel(w, index=False, sheet_name="Results")
+#     buf.seek(0)
+#     st.download_button(
+#         "📥 Download Full Excel",
+#         data=buf,
+#         file_name="intellimatch_results.xlsx",
+#         mime="application/vnd.openxmlformats-officedocument-spreadsheetml.sheet"
+#     )

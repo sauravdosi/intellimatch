@@ -11,8 +11,10 @@ from src.kfold_tfidf_generator import ArgParser as KFoldTFIDFArgParser
 class NLPPreprocessing(TFIDFPreprocessing):
     # Feature Engineering except for TFIDF
 
-    def __init__(self, df, n_process=3, config_path="config/config.ini"):
+    def __init__(self, df, db_nlp_path="data/nlp_reference.csv", n_process=3, config_path="config/config.ini"):
         super().__init__(df, n_process=n_process)
+        # self.db_nlp_df = pd.read_json(db_nlp_path, orient='records')
+        # self.db_nlp_df = pd.read_csv(db_nlp_path)
         self.config = ConfigParser()
         self.config.read([config_path])
         self.word_vectors_spacy_model = self.config.get("NLP_PREPROCESSING", "word_vectors_spacy_model")

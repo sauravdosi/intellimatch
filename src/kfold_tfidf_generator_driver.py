@@ -127,9 +127,9 @@ class KFoldTFIDFGeneratorDriver:
         processed_df = self.process_data()
 
         # Determine number of processes if not provided
-        num_process = self.n_process if self.n_process is not None else (
+        num_process = int(self.n_process if self.n_process is not None else (
             (len(processed_df[processed_df["Source"] == self.inference_column]) // 10000) + 1
-        )
+        ))
 
         # Generate K-Fold TF-IDF
         kfold_generator = KFoldTFIDFGenerator(processed_df)
@@ -141,7 +141,10 @@ class KFoldTFIDFGeneratorDriver:
 
 
 if __name__ == "__main__":
-    pipeline = KFoldTFIDFGeneratorDriver("data/pretfidf_prodtest.xlsx")
+    pipeline = KFoldTFIDFGeneratorDriver("data/tfidf_reference.xlsx", )
     output_df = pipeline.run()
     print(output_df)
+    output_df = output_df[output_df["Source"] == pipeline.reference_column]
+    print(output_df)
+    output_df.to_json("data/tfidf_reference.json", orient="records")
 
