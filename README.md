@@ -1,8 +1,10 @@
 # 🧠 IntelliMatch: Intelligent Company Name Matching
 
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/release/python-3120/) [![TensorFlow 2.19](https://img.shields.io/badge/tensorflow-2.19-orange)](https://www.tensorflow.org/) [![PyTorch 2.7](https://img.shields.io/badge/torch-2.7-red)](https://pytorch.org/) [![spaCy 3.8](https://img.shields.io/badge/spacy-3.8-green)](https://spacy.io/)  
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/release/python-3120/) [![TensorFlow 2.19](https://img.shields.io/badge/tensorflow-2.19-orange)](https://www.tensorflow.org/) [![PyTorch 2.7](https://img.shields.io/badge/torch-2.7-red)](https://pytorch.org/) [![spaCy 3.8](https://img.shields.io/badge/spacy-3.8-green)](https://spacy.io/) [![Live Demo](https://img.shields.io/badge/demo-online-yellow)](https://your-demo-url.com)  
 
-[demo.mp4](img/demo.mp4)
+## Demo Video:
+
+![demo.gif](img/demo.gif)
 
 ---
 
