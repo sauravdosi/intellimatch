@@ -36,12 +36,6 @@ class MLFuzzyMatching:
     def match_multiprocess(self, n_process=4):
         df_chunks = self.split_dataframe(self.infer_df, n_process)
 
-        print(len(df_chunks))
-
-        # for i, my_df in enumerate(df_chunks):
-        #     print(i)
-        #     print(my_df.columns.tolist())
-
         pool = mp.Pool(processes=n_process)
         if self.self_match:
             result_chunks = pool.map(self.match_self, df_chunks)

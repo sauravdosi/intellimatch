@@ -12,13 +12,12 @@ import numpy as np
 import time
 import re
 import os
-from configparser import ConfigParser
 from src.kfold_tfidf_generator import ArgParser as KFoldTFIDFArgParser
 
 
 class KeywordClassifier:
     def __init__(self, data: pd.DataFrame, mode="test",
-                 model="ml_matching9_model.weights.h5"):
+                 model="keyword_classifier.weights.h5"):
         self.data = data
         self.mode = mode
         # Neural Network specific parameters
@@ -117,12 +116,6 @@ class KeywordClassifier:
         # TFIDF batch normalization
         max_tfidf = max(tfidf_values)
         min_tfidf = min(tfidf_values)
-
-        # max_tfidf = 1284.0284526647
-        # min_tfidf = 0.16431612510000002
-
-        print(f"max_tfidf={max_tfidf}")
-        print(f"min_tfidf={min_tfidf}")
 
         self.data["tfidf_minmax_normalized"] = self.data["tfidf_values"].apply(
             lambda x: [(tfidf - min_tfidf) / (max_tfidf - min_tfidf) for tfidf in x])

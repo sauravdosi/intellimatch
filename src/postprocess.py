@@ -146,7 +146,3 @@ class PostProcess:
         result_df = self.concatenate_and_compute()
         return self.finalize(result_df)
 
-
-# Example usage:
-# pipeline = HistoricalMatchingPipeline(main_df, active_hcs_df)
-# final_df = pipeline.run()
