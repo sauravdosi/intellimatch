@@ -4,7 +4,9 @@
 
 ## Introduction:
 
-Inconsistent or variant company names plague industries from finance to e-commerce, leading to duplicate records, missed insights, and compliance headaches. Our solution combines smart keyword ranking with transformer-powered fuzzy matching to clean, link, categorize, and standardize company names—automating a task that’s critical (and all too common) in today’s data ecosystems.
+Inconsistent or variant company names plague industries from finance to e-commerce, leading to duplicate records, missed insights, and compliance headaches. 
+Our solution combines **transformer-powered keyword ranking** with **ML fuzzy matching** to clean, link, categorize, and standardize company names—automating a 
+task that’s critical (and all too common) in today’s data ecosystems.
 
 ## Demo Video:
 
