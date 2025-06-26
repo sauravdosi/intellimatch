@@ -7,7 +7,7 @@
 ![demo.gif](img/demo.gif)
 
 
-## Features
+## Features:
 
 - 🚀 **Seamless Data Onboarding**  
   Effortlessly ingest JSON, CSV, or database records with one-click preprocessing pipelines.
@@ -217,20 +217,22 @@ In Stage 4, we leverage our classified keywords and encoded features to link eac
    - Optionally compile a PDF/HTML summary report with top examples and metrics.
 
 
-## Modules
+## Modules:
 
-| Module                  | Description                                                       |
-| ----------------------- | ----------------------------------------------------------------- |
-| `data_loader.py`        | Reads JSON/CSV, handles joins, and returns pandas DataFrames.     |
-| `keyword_classifier.py` | Defines and runs the keyword classification model.                |
-| `ml_fuzzy_matching.py`  | Implements fuzzy matching logic with Scikit-learn & custom rules. |
-| `postprocessing.py`     | Filters, ranks, and formats final match results.                  |
-| `app.py`                | Streamlit app orchestrating stages and UI.                        |
-| `utils.py`              | Helper functions for logging, configuration, and visuals.         |
+| Module                                                                                     | Description                                                       |
+|--------------------------------------------------------------------------------------------| ----------------------------------------------------------------- |
+| `tfidf_generator.py`<br/>`kfold_tfidf_generator.py`<br/> `kfold_tfidf_generator_driver.py` | Reads JSON/CSV, handles joins, and returns pandas DataFrames.     |
+| `nlp_preprocessing.py`                                                                     | Defines and runs the keyword classification model.                |
+| `keyword_classifier.py`                                                                    | Implements fuzzy matching logic with Scikit-learn & custom rules. |
+| `ml_fuzzy_matching.py`                                                                     | Filters, ranks, and formats final match results.                  |
+| `postprocess.py`                                                                           | Streamlit app orchestrating stages and UI.                        |
+| `train_classifier.py`<br/> `test_classifier.py`                                            | Helper functions for logging, configuration, and visuals.         |
+| `app.py`                                                                                   | Helper functions for logging, configuration, and visuals.         |
+| `intellimatch_controller.py`                                                               | Helper functions for logging, configuration, and visuals.         |
 
 ---
 
-## Installation
+## Setup and Installation:
 
 ```bash
 # clone the repo
