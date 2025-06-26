@@ -6,20 +6,6 @@
 
 ![demo.gif](img/demo.gif)
 
----
-
-## Table of Contents
-
-1. [Features](#features)  
-2. [Modules](#modules)  
-3. [Installation](#installation)  
-4. [Training](#training)  
-5. [Deployment](#deployment)  
-6. [Metrics](#metrics)  
-7. [Conclusion](#conclusion)  
-8. [License](#license)  
-
----
 
 ## Features
 
