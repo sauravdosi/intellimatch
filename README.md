@@ -2,7 +2,7 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/release/python-3120/) [![TensorFlow 2.19](https://img.shields.io/badge/tensorflow-2.19-orange)](https://www.tensorflow.org/) [![PyTorch 2.7](https://img.shields.io/badge/torch-2.7-red)](https://pytorch.org/) [![spaCy 3.8](https://img.shields.io/badge/spacy-3.8-green)](https://spacy.io/) [![Live Demo](https://img.shields.io/badge/demo-online-yellow)](https://your-demo-url.com)  
 
-## Introduction
+## Introduction:
 
 Inconsistent or variant company names plague industries from finance to e-commerce, leading to duplicate records, missed insights, and compliance headaches. Our solution combines smart keyword ranking with transformer-powered fuzzy matching to clean, link, categorize, and standardize company names—automating a task that’s critical (and all too common) in today’s data ecosystems.
 
@@ -11,8 +11,7 @@ Inconsistent or variant company names plague industries from finance to e-commer
 ![demo.gif](img/demo.gif)
 
 
-
-## Features
+## Features:
 
 - 🚀 **Seamless Data Onboarding**  
   Effortlessly ingest JSON, CSV, or database records with one-click preprocessing pipelines.
@@ -35,13 +34,13 @@ Inconsistent or variant company names plague industries from finance to e-commer
 - 🎨 **Interactive Streamlit UI**  
   Navigate each stage through a sleek, user-friendly web interface—no coding required!
 ---
-## 🚀 Five-Stage Workflow Overview
+## 🚀 Five-Stage Workflow Overview:
 
 Instead of listing modules, we walk you through the _five key stages_ that power our end-to-end record-linkage pipeline. Each stage comes with intuitive visuals and interactive metrics to keep you in control.
 
 ---
 
-### Stage 1: K-Fold TF-IDF Generation 🔍
+### Stage 1️⃣: K-Fold TF-IDF Generation 🔍
 
 ![tfidf.gif](img/tfidf.gif)
 
@@ -71,7 +70,7 @@ In this foundational stage, we transform raw company names into rich, normalized
 > **Why K-Fold?**  
 > K-fold cross-validation at the TF-IDF stage ensures that term weights generalize well, giving you rock-solid features even when your company list evolves or grows.
 
-### Stage 2: NLP Preprocessing 🤖✨
+### Stage 2️⃣: NLP Preprocessing 🤖✨
 
 ![nlp_preprocess.gif](img/nlp_preprocess.gif)
 
@@ -100,7 +99,7 @@ In Stage 2, we turn cleaned tokens into rich linguistic features that power both
 > **Pro tip:**  
 > By blending transformer accuracy with spaCy’s efficiency, you get a nimble pipeline that scales from thousands to millions of records without losing linguistic nuance.  
 
-### Stage 3: Transformer-Powered Keyword Classification 🎯🌟
+### Stage 3️⃣: Transformer-Powered Keyword Classification 🎯🌟
 
 ![keyword_class.gif](img/keyword_class.gif)
 
@@ -179,7 +178,7 @@ Here’s a step-by-step breakdown of our token-level classifier, which fuses seq
 
 This hybrid architecture yields high‐precision token tags, even on noisy or unusually formatted company names.  
 
-### Stage 4: Intelligent ML Fuzzy Matching 🔗🤖
+### Stage 4️⃣: Intelligent ML Fuzzy Matching 🔗🤖
 
 ![ml_fuzzy.gif](img/ml_fuzzy.gif)
 
@@ -209,7 +208,7 @@ In Stage 4, we leverage our classified keywords and encoded features to link eac
 > **Key Benefit:**  
 > By fusing traditional fuzzy logic with neural embeddings and context tags, Stage 4 ensures high-precision entity linking—even when names are misspelled, reordered, or abbreviated.  
 
-### Stage 5: Postprocessing & Reporting 📑
+### Stage 5️⃣: Postprocessing & Reporting 📑
 
 ![postprocess.gif](img/postprocess.gif)
 
@@ -243,12 +242,20 @@ In Stage 4, we leverage our classified keywords and encoded features to link eac
 
 ```bash
 # clone the repo
-git clone https://github.com/username/repo.git
-cd repo
+git clone https://github.com/sauravdosi/intellimatch.git
+cd intellimatch
 
 # create and activate env
-python3 -m venv venv
-source venv/bin/activate
+conda create -n intellimatch python=3.12
+conda activate intellimatch
 
 # install dependencies
 pip install -r requirements.txt
+
+# update config.ini file
+nano config/config.ini
+```
+
+## Deploy:
+
+## Train Keyword Classifier:
