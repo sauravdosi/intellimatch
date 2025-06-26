@@ -1,32 +1,39 @@
-# 🧠 IntelliMatch: Intelligent Company Name Matching
+# 🧠 IntelliMatch: Intelligent Name Matching
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/downloads/release/python-3120/) [![TensorFlow 2.19](https://img.shields.io/badge/tensorflow-2.19-orange)](https://www.tensorflow.org/) [![PyTorch 2.7](https://img.shields.io/badge/torch-2.7-red)](https://pytorch.org/) [![spaCy 3.8](https://img.shields.io/badge/spacy-3.8-green)](https://spacy.io/) [![Live Demo](https://img.shields.io/badge/demo-online-yellow)](https://your-demo-url.com)  
+
+## Introduction
+
+Inconsistent or variant company names plague industries from finance to e-commerce, leading to duplicate records, missed insights, and compliance headaches. Our solution combines smart keyword ranking with transformer-powered fuzzy matching to clean, link, categorize, and standardize company names—automating a task that’s critical (and all too common) in today’s data ecosystems.
 
 ## Demo Video:
 
 ![demo.gif](img/demo.gif)
 
 
-## Features:
+
+## Features
 
 - 🚀 **Seamless Data Onboarding**  
   Effortlessly ingest JSON, CSV, or database records with one-click preprocessing pipelines.
 
-- 🧠 **Smart Keyword Spotlight**  
-  Leverage a trained classifier to highlight and color-code critical company keywords in real time.
+- 🧠 **Smart Keyword Classification & Ranking**  
+  Pinpoint and color-code distinctive, subsidiary, and generic tokens with 98% accuracy—so you know exactly which words drive each company’s identity.
 
-- 🔗 **AI-Powered Fuzzy Matching**  
-  Combine machine learning and fuzzy logic for ultra-accurate record linkage—even across messy data.
+- 🔗 **Intelligent Name Matching & Categorization**  
+  Transformer-powered fuzzy matching with k-fold TF-IDF delivers 90%+ precision, then assigns a **Match Category** (Exact, Subsidiary, or Alias) for granular linkage.
+
+- 🏷️ **Standardized Alias Generation**  
+  Automatically detect corporate aliases and propose a single canonical name to unify variants across your datasets.
 
 - 📈 **Dynamic Post-Processing & Export**  
-  Auto-filter, rank, and format your final matches, then export to CSV, Excel, or your favorite BI tool.
+  Auto-filter by category and score, rank your top matches, and export results to CSV, Excel, or your favorite BI tool.
 
-- 📊 **Integrated Metrics Dashboard**  
-  Track end-to-end performance with built-in accuracy, precision, and latency monitoring.
+- 📊 **Integrated Metrics & Insights**  
+  Track end-to-end performance—accuracy, precision, recall, and latency—via built-in dashboards and visual reports.
 
 - 🎨 **Interactive Streamlit UI**  
-  Navigate each pipeline stage via a sleek, user-friendly web interface—no coding required!
-
+  Navigate each stage through a sleek, user-friendly web interface—no coding required!
 ---
 ## 🚀 Five-Stage Workflow Overview
 

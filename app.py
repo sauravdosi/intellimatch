@@ -68,7 +68,7 @@ with col2:
 # 🌟 One-liner
 # ——————————————————————————————————————————
 st.info("**IntelliMatch** is an end-to-end Streamlit demo that ingests your company lists, runs **K-Fold TF-IDF**, "
-            "**NLP Preprocessing**, **Keyword Classification**, and **ML Fuzzy Matching** to accurately enrich and match records between"
+            "**NLP Preprocessing**, **Keyword Classification**, and **ML Fuzzy Matching** to accurately enrich and match records between "
             "the two sources with interactive per-stage previews, demo workflows and downloadable Excel report! 🚀")
 # ——————————————————————————————————————————
 # 📚 Get Started (Emoji-rich)
