@@ -240,16 +240,16 @@ In Stage 4, we leverage our classified keywords and encoded features to link eac
 
 ## Modules:
 
-| Module                                                                                     | Description                                                                                                                                            |
-|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `tfidf_generator.py`<br/>`kfold_tfidf_generator.py`<br/>`kfold_tfidf_generator_driver.py` | Ingests raw JSON/CSV inputs, cleans & standardizes company names, tokenizes, then computes k-fold TF-IDF vectors and outputs a normalized feature matrix. |
-| `nlp_preprocessing.py`                                                                     | Leverages spaCy (`en_core_web_lg` & `en_core_web_trf`) to produce word embeddings, POS tags, and positional encodings for each token in a company name.   |
-| `keyword_classifier.py`                                                                    | Defines and runs the transformer-based token classifier that labels each term as **importqnt**, **subsidiary**, or **generic**.                         |
+| Module                                                                                     | Description                                                                                                                                                |
+|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `tfidf_generator.py`<br/>`kfold_tfidf_generator.py`<br/>`kfold_tfidf_generator_driver.py` | Ingests raw JSON/CSV inputs, cleans & standardizes company names, tokenizes, then computes k-fold TF-IDF vectors and outputs a normalized feature matrix.  |
+| `nlp_preprocessing.py`                                                                     | Leverages spaCy (`en_core_web_lg` & `en_core_web_trf`) to produce word embeddings, POS tags, and positional encodings for each token in a company name.    |
+| `keyword_classifier.py`                                                                    | Defines and runs the transformer-based token classifier that labels each term as **important**, **subsidiary**, or **generic**.                            |
 | `ml_fuzzy_matching.py`                                                                     | Combines token‐level features (embeddings, TF-IDF, POS) with classic fuzzy metrics to compute match scores, assign match categories, and generate aliases. |
-| `postprocess.py`                                                                           | Aggregates & filters match results, applies score thresholds, computes summary KPIs, and exports final reports (CSV/JSON/DB loads) and dashboards.     |
-| `train_classifier.py`<br/>`test_classifier.py`                                            | Scripts to train, validate, and evaluate the keyword classifier; includes config parsing, metric logging, and checkpointing.                            |
-| `app.py`                                                                                   | Streamlit front-end orchestrator that walks users through all five stages with interactive widgets, visualizations, and sample‐by‐sample previews.       |
-| `intellimatch_controller.py`                                                               | Central pipeline controller managing data flow and state across stages—TF-IDF, NLP, classification, matching, and postprocessing.                         |
+| `postprocess.py`                                                                           | Aggregates & filters match results, applies score thresholds, computes summary KPIs, and exports final reports (CSV/JSON/DB loads) and dashboards.         |
+| `train_classifier.py`<br/>`test_classifier.py`                                            | Scripts to train, validate, and evaluate the keyword classifier; includes config parsing, metric logging, and checkpointing.                               |
+| `app.py`                                                                                   | Streamlit front-end orchestrator that walks users through all five stages with interactive widgets, visualizations, and sample‐by‐sample previews.         |
+| `intellimatch_controller.py`                                                               | Central pipeline controller managing data flow and state across stages—TF-IDF, NLP, classification, matching, and postprocessing.                          |
 
 ---
 
