@@ -315,7 +315,7 @@ Our **Intelligent Matching Suite** transforms the headache of messy company name
   - 90%+ fuzzy matching precision  
 
 - ⚡ **Lightning-Fast Performance**:  
-  - 50% time savings (≈0.6 s/record)  
+  - 50% time savings (≈1.5 s/record)  
   - Scales to thousands of records with ease  
 
 - 🔍 **Granular Insights**:  
